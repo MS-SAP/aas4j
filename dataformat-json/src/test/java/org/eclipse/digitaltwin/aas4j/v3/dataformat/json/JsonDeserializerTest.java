@@ -131,17 +131,18 @@ public class JsonDeserializerTest {
         Environment model = deserializerToTest.read(Examples.EXAMPLE_SIMPLE.fileContent(), Examples.EXAMPLE_SIMPLE.getModel().getClass());
         AssetAdministrationShell shell = model.getAssetAdministrationShells().get(0);
 
-        // Set UTF-32 Char in IdShort: https://www.fileformat.info/info/unicode/char/10ffff/index.htm
-        shell.setIdShort(shell.getIdShort()+ "\uDBFF\uDFFF");
+        // Set UTF-32 Char in Id: https://www.fileformat.info/info/unicode/char/10ffff/index.htm
+        shell.setId(shell.getId()+ "\uDBFF\uDFFF");
 
+        // Serialize & Deserialize model
         String serializedModel = new JsonSerializer().write(model);
         Environment deserializedModel = deserializerToTest.read(serializedModel, model.getClass());
 
         // Test that serializing and deserializing work with UTF-32 Char
-        assertEquals(model.getAssetAdministrationShells().get(0).getIdShort(), deserializedModel.getAssetAdministrationShells().get(0).getIdShort());
+        assertEquals(model.getAssetAdministrationShells().get(0).getId(), deserializedModel.getAssetAdministrationShells().get(0).getId());
 
         // Test that UTF-32 Char has been set
-        assertNotEquals(model.getAssetAdministrationShells().get(0).getIdShort(), Examples.EXAMPLE_SIMPLE.getModel().getAssetAdministrationShells().get(0).getIdShort());
+        assertNotEquals(model.getAssetAdministrationShells().get(0).getId(), Examples.EXAMPLE_SIMPLE.getModel().getAssetAdministrationShells().get(0).getId());
     }
 
     @Test
