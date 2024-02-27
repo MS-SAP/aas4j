@@ -41,6 +41,7 @@ import org.eclipse.digitaltwin.aas4j.v3.model.Property;
 import org.eclipse.digitaltwin.aas4j.v3.model.Referable;
 import org.eclipse.digitaltwin.aas4j.v3.model.Submodel;
 import org.eclipse.digitaltwin.aas4j.v3.model.SubmodelDescriptor;
+import org.eclipse.digitaltwin.aas4j.v3.model.AssetAdministrationShell;
 import org.eclipse.digitaltwin.aas4j.v3.model.impl.DefaultProperty;
 import org.eclipse.digitaltwin.aas4j.v3.model.impl.DefaultSubmodel;
 
@@ -50,6 +51,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotEquals;
 
 public class JsonDeserializerTest {
     private static JsonDeserializer deserializerToTest;
@@ -121,6 +123,25 @@ public class JsonDeserializerTest {
 
         ByteArrayInputStream bais = new ByteArrayInputStream("[]".getBytes());
         assertEquals(emptyList, deserializerToTest.readList(bais, Submodel.class));
+    }
+
+    @Test
+    public void testSimpleExampleWithUTF32Char() throws Exception {
+        // Load model from file
+        Environment model = deserializerToTest.read(Examples.EXAMPLE_SIMPLE.fileContent(), Examples.EXAMPLE_SIMPLE.getModel().getClass());
+        AssetAdministrationShell shell = model.getAssetAdministrationShells().get(0);
+
+        // Set UTF-32 Char in IdShort: https://www.fileformat.info/info/unicode/char/10ffff/index.htm
+        shell.setIdShort(shell.getIdShort()+ "\uDBFF\uDFFF");
+
+        String serializedModel = new JsonSerializer().write(model);
+        Environment deserializedModel = deserializerToTest.read(serializedModel, model.getClass());
+
+        // Test that serializing and deserializing work with UTF-32 Char
+        assertEquals(model.getAssetAdministrationShells().get(0).getIdShort(), deserializedModel.getAssetAdministrationShells().get(0).getIdShort());
+
+        // Test that UTF-32 Char has been set
+        assertNotEquals(model.getAssetAdministrationShells().get(0).getIdShort(), Examples.EXAMPLE_SIMPLE.getModel().getAssetAdministrationShells().get(0).getIdShort());
     }
 
     @Test
